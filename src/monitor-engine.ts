@@ -7,6 +7,8 @@
 import { MuseClient } from 'muse-js';
 import { RollingBuffer, extractBandPowers, type BandPowers } from './signal';
 
+import OSC from 'osc-js';
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const EEG_SAMPLE_RATE = 256;
@@ -70,6 +72,9 @@ let resizeHandler: (() => void) | null = null;
 let outsideClickHandler: ((e: MouseEvent) => void) | null = null;
 let connectListenerBound = false; // prevent duplicate connect button listeners
 
+// OSC state
+let canSendOsc = false;
+
 // ─── Logging ─────────────────────────────────────────────────────────────────
 
 function log(msg: string, level: 'info' | 'success' | 'error' | 'warn' = 'info') {
@@ -82,6 +87,15 @@ function log(msg: string, level: 'info' | 'success' | 'error' | 'warn' = 'info')
   logContent.appendChild(div);
   logContent.scrollTop = logContent.scrollHeight;
 }
+
+// ─── WS/OSC Server ───────────────────────────────────────────────────────────────────
+
+// Connect to the Node.js WebSocket Bridge
+const osc = new OSC({
+  plugin: new OSC.WebsocketClientPlugin({ host: 'localhost', port: 8080 })
+});
+
+osc.open();
 
 // ─── Muse Connection ─────────────────────────────────────────────────────────
 
@@ -235,6 +249,8 @@ function updateMetrics() {
 
   const calm = smoothedBands.beta > 0 ? smoothedBands.alpha / smoothedBands.beta : 0;
   elCalm.textContent = `${Math.min(99, Math.round(calm * 30))}`;
+  
+  if (canSendOsc) sendOscMetrics(focus, calm);
 
   const sampleK = totalSamples > 1000 ? `${(totalSamples / 1000).toFixed(1)}k` : `${totalSamples}`;
   elSamples.textContent = sampleK;
@@ -513,6 +529,22 @@ function updateAudioUI() {
   pauseIcon.style.display = audioIsPlaying ? '' : 'none';
   btn.classList.toggle('active', audioIsPlaying);
 }
+
+// ─── OSC Data ──────────────────────────────────────────────────────────────
+
+// Sending an OSC message from the browser
+function sendOscMetrics(arg1: number, arg2: number) {
+  // OSC messages consist of an address pattern and an array of arguments
+  const message = new OSC.Message('/muse_metrics/', arg1, arg2);
+  osc.send(message);
+  console.log(`Sent: /muse_metrics/ ${arg1}, ${arg2}`);
+}
+
+osc.on('open', () => {
+  console.log('Connected to OSC Bridge via WebSocket');
+  // Example usage:
+  canSendOsc = true;
+});
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
