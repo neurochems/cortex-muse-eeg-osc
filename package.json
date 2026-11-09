@@ -21,11 +21,13 @@
     "recharts": "^3.7.0",
     "rxjs": "^7.8.2",
     "tone": "^15.1.22",
-    "typescript": "^5.9.3",
     "vite": "^7.3.1"
   },
   "devDependencies": {
+    "@types/node": "^26.6.6",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
