@@ -250,7 +250,11 @@ function updateMetrics() {
   const calm = smoothedBands.beta > 0 ? smoothedBands.alpha / smoothedBands.beta : 0;
   elCalm.textContent = `${Math.min(99, Math.round(calm * 30))}`;
   
-  if (canSendOsc) sendOscMetrics(focus, calm);
+  let focusClamped = focus/10;
+  let calmClamped = calm/10;
+  if (focusClamped > 1) focusClamped = 1;
+  if (calmClamped > 1) calmClamped = 1;
+  if (canSendOsc) sendOscMetrics(focusClamped, calmClamped);
 
   const sampleK = totalSamples > 1000 ? `${(totalSamples / 1000).toFixed(1)}k` : `${totalSamples}`;
   elSamples.textContent = sampleK;
@@ -535,7 +539,7 @@ function updateAudioUI() {
 // Sending an OSC message from the browser
 function sendOscMetrics(arg1: number, arg2: number) {
   // OSC messages consist of an address pattern and an array of arguments
-  const message = new OSC.Message('/muse_metrics/', arg1, arg2);
+  const message = new OSC.Message('/muse_metrics/', 0, 0, 0, 0, 0, 0, 0, arg1, arg2);
   osc.send(message);
   console.log(`Sent: /muse_metrics/ ${arg1}, ${arg2}`);
 }

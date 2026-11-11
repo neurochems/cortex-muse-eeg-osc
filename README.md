@@ -42,6 +42,22 @@ Opens `http://localhost:3000`. Click **CONNECT** and select your Muse from the B
 
 ---
 
+## OSC
+
+To stream OSC:
+1. In Command Prompt at project folder, start server
+```bash
+npx ts-node src\server.ts
+```
+2. In another Command Prompt at project folder, start app
+```bash
+npm run dev
+```
+3. Connnect headset.
+4. Automatically forwards to port 5003 as `/muse_metrics`. First float is `focus` score, second float is `calm` score.
+
+---
+
 ## The Tabs
 
 ### Monitor — Real-Time EEG Observatory
